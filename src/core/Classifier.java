@@ -1,18 +1,14 @@
 package core;
 
-import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 
 public class Classifier {
-
-	// Naive based classifier
-	static NaiveBayes naiveBayesClassifier = new NaiveBayes();
 	
 	// Feature vector
-	private FastVector fvWekaAttributes = null;
+	//private FastVector fvWekaAttributes = null;
 
 	Classifier() {
 		// Declare a nominal attribute along with its values
@@ -42,17 +38,17 @@ public class Classifier {
 		Attribute day = new Attribute("day", fvNominalVal2);
 
 		// Declare the feature vector
-		fvWekaAttributes = new FastVector(8);
-		fvWekaAttributes.addElement(city);
-		fvWekaAttributes.addElement(year);
-		fvWekaAttributes.addElement(month);
-		fvWekaAttributes.addElement(date);
-		fvWekaAttributes.addElement(rainfall);
-		fvWekaAttributes.addElement(maxTemp);
-		fvWekaAttributes.addElement(minTemp);
-		fvWekaAttributes.addElement(day);
+		Predictor.attributes = new FastVector(8);
+		Predictor.attributes.addElement(city);
+		Predictor.attributes.addElement(year);
+		Predictor.attributes.addElement(month);
+		Predictor.attributes.addElement(date);
+		Predictor.attributes.addElement(rainfall);
+		Predictor.attributes.addElement(maxTemp);
+		Predictor.attributes.addElement(minTemp);
+		Predictor.attributes.addElement(day);
 
-		Predictor.trainingData = new Instances("Weather", fvWekaAttributes, 10);
+		Predictor.trainingData = new Instances("Weather", Predictor.attributes, 10);
 
 		if (Predictor.trainingData.classIndex() == -1)
 			Predictor.trainingData.setClassIndex(Predictor.trainingData
@@ -64,10 +60,12 @@ public class Classifier {
 		String[] data = dataString.split(",");
 		Instance entry = new Instance(8);
 		
+		// set data year limit
 		if ((Integer.parseInt(data[1])) < 1945) {
 			return;
 		}
 		
+		// check for missing data
 		for (int i = 0; i < data.length; i++) {
 			
 			if (data[i].equals("?")) {
@@ -75,25 +73,25 @@ public class Classifier {
 			}
 		}
 		
-		
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(0), data[0]);      
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(1), Integer.parseInt(data[1]));      
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(2), Integer.parseInt(data[2]));
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(3), Integer.parseInt(data[3]));
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(4), Double.parseDouble(data[4]));
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(5), Double.parseDouble(data[5]));
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(6), Double.parseDouble(data[6]));
-		entry.setValue((Attribute)fvWekaAttributes.elementAt(7), data[7]);
+		// Insert data into instance
+		entry.setValue((Attribute)Predictor.attributes.elementAt(0), data[0]);      
+		entry.setValue((Attribute)Predictor.attributes.elementAt(1), Integer.parseInt(data[1]));      
+		entry.setValue((Attribute)Predictor.attributes.elementAt(2), Integer.parseInt(data[2]));
+		entry.setValue((Attribute)Predictor.attributes.elementAt(3), Integer.parseInt(data[3]));
+		entry.setValue((Attribute)Predictor.attributes.elementAt(4), Double.parseDouble(data[4]));
+		entry.setValue((Attribute)Predictor.attributes.elementAt(5), Double.parseDouble(data[5]));
+		entry.setValue((Attribute)Predictor.attributes.elementAt(6), Double.parseDouble(data[6]));
+		entry.setValue((Attribute)Predictor.attributes.elementAt(7), data[7]);
 
-		// add the instance
+		// add to instances
 		Predictor.trainingData.add(entry);
 	}
 	
 	void completeTrainingClassifier() {
 		try {
+			
 			// NaiveBayes object
-			NaiveBayes nb = new NaiveBayes();
-			nb.buildClassifier(Predictor.trainingData);
+			Predictor.naiveBayesClassifier.buildClassifier(Predictor.trainingData);
 
 //			Evaluation eval = new Evaluation(Predictor.trainingData);
 //			eval.crossValidateModel(nb, Predictor.trainingData, 2, new Random(1));

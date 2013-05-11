@@ -4,25 +4,32 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import weka.classifiers.bayes.NaiveBayes;
+import weka.core.FastVector;
 import weka.core.Instances;
 
 public class Predictor {
+	
+	// Training data
 	static Instances trainingData;
 	
+	// Attributes
+	static FastVector attributes = null;
+	
+	// Naive based classifier
+	static NaiveBayes naiveBayesClassifier = new NaiveBayes();
+	
+	// Location of training and test data
 	private static String trainingInput = "melb.train";
 	private static String testInput = "melb.test";
 
 	public static void main(String[] args) {
-		// Declare new classifier
+
 		
 		doClassification();
 		System.out.println(trainingData.toSummaryString());
 
-		// Read in test data
-
-		// Evaluate test data
-
-		// Classify test data instance
+		doEvaluation();
 
 		// Output to file
 	}
@@ -46,7 +53,6 @@ public class Predictor {
 			
 			// Classify and learn from the training data
 			trainingClassifier.completeTrainingClassifier();
-			
 			
 
 		} catch (IOException e) {
@@ -72,8 +78,13 @@ public class Predictor {
 			// read line by line
 			while ((currentLine = br.readLine()) != null) {
 				
+				// evaluate data
+				Evaluator evaluator = new Evaluator(currentLine);
+				
+				//double[] evaluatedData = evaluator.getFDistribution();
 				
 				
+				System.out.println(evaluator.getProbablyDay());
 			}
 			
 
