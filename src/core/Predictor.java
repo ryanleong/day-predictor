@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.trees.J48;
 import weka.core.FastVector;
 import weka.core.Instances;
 
@@ -17,7 +19,11 @@ public class Predictor {
 	static FastVector attributes = null;
 	
 	// Naive based classifier
-	static NaiveBayes naiveBayesClassifier = new NaiveBayes();
+	static NaiveBayes classifier = new NaiveBayes();
+	//static J48 classifier = new J48();
+	
+	// Evaluator
+	static Evaluation eval = null; 
 	
 	// Location of training and test data
 	private static String trainingInput = "melb.train";
@@ -71,6 +77,9 @@ public class Predictor {
 		// Read from test data
 		BufferedReader br = null;
 		
+		// evaluate data
+		Evaluator evaluator = new Evaluator();
+		
 		try {
 			String currentLine;
 			br = new BufferedReader(new FileReader(testInput));
@@ -78,13 +87,8 @@ public class Predictor {
 			// read line by line
 			while ((currentLine = br.readLine()) != null) {
 				
-				// evaluate data
-				Evaluator evaluator = new Evaluator(currentLine);
-				
-				//double[] evaluatedData = evaluator.getFDistribution();
-				
-				
-				System.out.println(evaluator.getProbablyDay());
+				// add test data to instances
+				evaluator.addToTestData(currentLine);
 			}
 			
 
@@ -98,6 +102,9 @@ public class Predictor {
 				ex.printStackTrace();
 			}
 		}
+		
+		
+		System.out.println(evaluator.getEvaluation());
 		
 	}
 	

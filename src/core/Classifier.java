@@ -91,10 +91,9 @@ public class Classifier {
 		try {
 			
 			// NaiveBayes object
-			Predictor.naiveBayesClassifier.buildClassifier(Predictor.trainingData);
+			Predictor.classifier.buildClassifier(Predictor.trainingData);
 
-//			Evaluation eval = new Evaluation(Predictor.trainingData);
-//			eval.crossValidateModel(nb, Predictor.trainingData, 2, new Random(1));
+
 		} catch (Exception e) {
 			// TODO: handle exception
 			System.err.print("Unable to create classifier or evaluator.");
