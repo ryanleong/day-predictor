@@ -1,5 +1,7 @@
 package core;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Random;
 
 import weka.classifiers.Evaluation;
@@ -10,15 +12,24 @@ import weka.core.Instances;
 public class Evaluator {
 
 	private Instance test = new Instance(8);
-	Instances testData = null ;//new Instances();
+	Instances testData = null ;
 	
 	// Constructor
-	Evaluator() {
+	Evaluator(String testSource) {
 		
-		testData = new Instances("Weather Test", Predictor.attributes, 10);
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(testSource));
+			testData = new Instances(reader);
+			
+			if (testData.classIndex() == -1)
+				testData.setClassIndex(testData.numAttributes() - 1);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			System.err.print("Unable to build instances from training input.\nExiting Program.");
+			System.exit(1);
+		}
 
-		if (testData.classIndex() == -1)
-			testData.setClassIndex(testData.numAttributes() - 1);
 		
 		
 		try {
@@ -26,6 +37,7 @@ public class Evaluator {
 			Predictor.eval = new Evaluation(Predictor.trainingData);
 		} catch (Exception e) {
 			System.out.println("Unable to create evaluator.");
+			System.exit(1);
 		}
 		
 	}
@@ -105,9 +117,7 @@ public class Evaluator {
 
 	String getEvaluation() {
 		
-		try {
-			
-			
+		try {	
 			// Compare with test data
 			//Predictor.eval.evaluateModel(Predictor.classifier, testData);
 			

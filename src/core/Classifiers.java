@@ -1,5 +1,12 @@
 package core;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+
+import core.Predictor.classifierType;
+
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -10,52 +17,24 @@ public class Classifiers {
 	// Feature vector
 	//private FastVector fvWekaAttributes = null;
 
-	Classifiers() {
-		// Declare a nominal attribute along with its values
-		FastVector fvNominalVal = new FastVector(3);
-		fvNominalVal.addElement("Melbourne");
-		fvNominalVal.addElement("Perth");
-		fvNominalVal.addElement("Sydney");
-		Attribute city = new Attribute("city", fvNominalVal);
+	Classifiers(String trainingSource) {
 
-		// Declare four numeric attributes
-		Attribute year = new Attribute("year");
-		Attribute month = new Attribute("month");
-		Attribute date = new Attribute("date");
-		Attribute rainfall = new Attribute("rainfall");
-		Attribute maxTemp = new Attribute("maxTemp");
-		Attribute minTemp = new Attribute("minTemp");
-
-		// Declare a nominal attribute along with its values
-		FastVector fvNominalVal2 = new FastVector(7);
-		fvNominalVal2.addElement("Mon");
-		fvNominalVal2.addElement("Tue");
-		fvNominalVal2.addElement("Wed");
-		fvNominalVal2.addElement("Thu");
-		fvNominalVal2.addElement("Fri");
-		fvNominalVal2.addElement("Sat");
-		fvNominalVal2.addElement("Sun");
-		Attribute day = new Attribute("day", fvNominalVal2);
-
-		// Declare the feature vector
-		Predictor.attributes = new FastVector(8);
-		Predictor.attributes.addElement(city);
-		Predictor.attributes.addElement(year);
-		Predictor.attributes.addElement(month);
-		Predictor.attributes.addElement(date);
-		Predictor.attributes.addElement(rainfall);
-		Predictor.attributes.addElement(maxTemp);
-		Predictor.attributes.addElement(minTemp);
-		Predictor.attributes.addElement(day);
-
-		Predictor.trainingData = new Instances("Weather", Predictor.attributes, 10);
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(trainingSource));
+			Predictor.trainingData = new Instances(reader);
+			
+		} catch (Exception e) {
+			System.err.print("Unable to build instances from training input.\nExiting Program.");
+			System.exit(1);
+		}
+		
 
 		if (Predictor.trainingData.classIndex() == -1)
-			Predictor.trainingData.setClassIndex(Predictor.trainingData
-					.numAttributes() - 1);
+			Predictor.trainingData.setClassIndex(Predictor.trainingData.numAttributes() - 1);
 		
 	}
 
+	// To add an instance manually
 	void createInstance(String dataString) {
 		String[] data = dataString.split(",");
 		Instance entry = new Instance(8);
@@ -87,8 +66,15 @@ public class Classifiers {
 		Predictor.trainingData.add(entry);
 	}
 	
-	void completeTrainingClassifier() {
+	// To build classifiers
+	void buildTrainingClassifier() {
 		try {
+			
+			if (Predictor.cType == classifierType.NAIVEBAYES) {
+				Predictor.classifier = new NaiveBayes();
+			} else {
+				Predictor.classifier = new J48();
+			}
 			
 			// NaiveBayes object
 			Predictor.classifier.buildClassifier(Predictor.trainingData);
