@@ -20,6 +20,14 @@ public class Evaluator {
 		if (testData.classIndex() == -1)
 			testData.setClassIndex(testData.numAttributes() - 1);
 		
+		
+		try {
+			// Run evaluator
+			Predictor.eval = new Evaluation(Predictor.trainingData);
+		} catch (Exception e) {
+			System.out.println("Unable to create evaluator.");
+		}
+		
 	}
 	
 	
@@ -89,7 +97,7 @@ public class Evaluator {
 
 		testData.add(test);
 		
-		
+
 //		// Specify that the instance belong to the training set
 //		// in order to inherit from the set description
 //		test.setDataset(Predictor.trainingData);
@@ -98,32 +106,18 @@ public class Evaluator {
 	String getEvaluation() {
 		
 		try {
-			// Run evaluator
-			Predictor.eval = new Evaluation(Predictor.trainingData);
 			
 			
-			Predictor.eval.evaluateModel(Predictor.classifier, testData);
+			// Compare with test data
+			//Predictor.eval.evaluateModel(Predictor.classifier, testData);
 			
-			//Predictor.eval.crossValidateModel(Predictor.classifier, testData, 10, new Random(1));
+			Predictor.eval.crossValidateModel(Predictor.classifier, Predictor.trainingData, 10, new Random(1));
 			
-			//Predictor.eval.crossValidateModel(Predictor.naiveBayesClassifier, Predictor.trainingData, 10, new Random(1));
 			
-//			double[][] x = Predictor.eval.confusionMatrix();
-//			
-//			System.out.println("Correct: " + Predictor.eval.correct());
-			
-//			for (int i = 0; i < x.length; i++) {
-//				for (int j = 0; j < x[i].length; j++) {
-//					System.out.print(j + " ");
-//				}
-//				
-//				System.out.println();
-//			}
 			
 		} catch (Exception e) {
 			System.err.print("Could not run evaluator from weka.");
 		}
-		//System.out.println(testData.toString());
 		
 		return Predictor.eval.toSummaryString("\nResults\n======\n", true);
 		
@@ -145,61 +139,4 @@ public class Evaluator {
 
 	}
 	
-	String getProbablyDay() {
-		
-		double[] distributions = null;
-		String day = "";
-
-		try {
-			// get fDistribution
-			distributions = Predictor.classifier
-					.distributionForInstance(test);
-			
-			int probableDay = 0;
-			
-			for (int i = 1; i < distributions.length; i++) {
-				if(distributions[i] > distributions[i-1]) {
-					probableDay = i;
-				}
-			}
-			
-			switch (probableDay) {
-			case 0:
-				day = "Mon";
-				break;
-
-			case 1:
-				day = "Tue";
-				break;
-			
-			case 2:
-				day = "Wed";
-				break;
-			
-			case 3:
-				day = "Thu";
-				break;
-			
-			case 4:
-				day = "Fri";
-				break;
-				
-			case 5:
-				day = "Sat";
-				break;
-				
-			case 6:
-				day = "Sun";
-				break;
-				
-			default:
-				break;
-			}
-		} catch (Exception e) {
-			System.err.println("Unable to get distribution.");
-			return null;
-		}
-		
-		return day;
-	}
 }

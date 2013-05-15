@@ -5,12 +5,12 @@ import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 
-public class Classifier {
+public class Classifiers {
 	
 	// Feature vector
 	//private FastVector fvWekaAttributes = null;
 
-	Classifier() {
+	Classifiers() {
 		// Declare a nominal attribute along with its values
 		FastVector fvNominalVal = new FastVector(3);
 		fvNominalVal.addElement("Melbourne");
@@ -83,7 +83,7 @@ public class Classifier {
 		entry.setValue((Attribute)Predictor.attributes.elementAt(6), Double.parseDouble(data[6]));
 		entry.setValue((Attribute)Predictor.attributes.elementAt(7), data[7]);
 
-		// add to instances
+		// add to data set
 		Predictor.trainingData.add(entry);
 	}
 	
@@ -95,10 +95,8 @@ public class Classifier {
 
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			System.err.print("Unable to create classifier or evaluator.");
 		}
-		
-
 	}
+	
 }
