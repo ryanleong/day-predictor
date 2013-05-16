@@ -55,16 +55,25 @@ public class Predictor {
 	}
 
 	private static void doEvaluation() {
+		Evaluator evaluator = new Evaluator();
+		
+		// TODO put attributes from training data into test instance
+//		evaluator.doPredictionForTest(testInput);
+//		
+//		System.exit(0);
+		
+		
+		
+		//System.out.println(currInst.attribute(3).name());
+		
+		///////////////////////////////////////////////
+		// Through weka read
+		
 
-		// evaluate data
-		Evaluator evaluator = new Evaluator(testInput);
+		evaluator.wekaRead(testInput);
+		
 
-		// get prediction for each instance
-		for (int i = 0; i < evaluator.testData.numInstances(); i++) {
-			System.out.print(evaluator.predictClassForInstance(i) + ", ");
-		}
-
-		System.out.println("============================");
+		System.out.println("\n============================");
 		System.out.println(evaluator.getEvaluation());
 
 		// Confusion matrix
@@ -82,6 +91,43 @@ public class Predictor {
 
 	}
 
+	private static void toFile() {
 
+		BufferedReader br = null;
+		 
+		try {
+ 
+			String currentLine;
+			boolean startReading = false;
+			
+			br = new BufferedReader(new FileReader(testInput));
+ 
+			while ((currentLine = br.readLine()) != null) {
+				
+				if (!startReading) {
+					if (currentLine.equals("@data")) {
+						startReading = true;
+					}
+					
+					String[] lineParts = currentLine.split(",");
+					lineParts[lineParts.length - 1] = "";
+					
+				}
+				
+				
+			}
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+ 
+
+	}
 
 }

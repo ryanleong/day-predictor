@@ -33,7 +33,26 @@ public class Classifiers {
 			Predictor.trainingData.setClassIndex(Predictor.trainingData.numAttributes() - 1);
 		
 	}
+	
+	// To build classifiers
+	void buildTrainingClassifier() {
+		try {
+			
+			if (Predictor.cType == classifierType.NAIVEBAYES) {
+				Predictor.classifier = new NaiveBayes();
+			} else {
+				Predictor.classifier = new J48();
+			}
+			
+			// NaiveBayes object
+			Predictor.classifier.buildClassifier(Predictor.trainingData);
 
+
+		} catch (Exception e) {
+			System.err.print("Unable to create classifier or evaluator.");
+		}
+	}
+	
 	// To add an instance manually
 	void createInstance(String dataString) {
 		String[] data = dataString.split(",");
@@ -65,24 +84,4 @@ public class Classifiers {
 		// add to data set
 		Predictor.trainingData.add(entry);
 	}
-	
-	// To build classifiers
-	void buildTrainingClassifier() {
-		try {
-			
-			if (Predictor.cType == classifierType.NAIVEBAYES) {
-				Predictor.classifier = new NaiveBayes();
-			} else {
-				Predictor.classifier = new J48();
-			}
-			
-			// NaiveBayes object
-			Predictor.classifier.buildClassifier(Predictor.trainingData);
-
-
-		} catch (Exception e) {
-			System.err.print("Unable to create classifier or evaluator.");
-		}
-	}
-	
 }
