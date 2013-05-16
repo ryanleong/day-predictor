@@ -121,16 +121,35 @@ public class Evaluator {
 			// Compare with test data
 			//Predictor.eval.evaluateModel(Predictor.classifier, testData);
 			
-			Predictor.eval.crossValidateModel(Predictor.classifier, Predictor.trainingData, 10, new Random(1));
+			Predictor.eval.crossValidateModel(Predictor.classifier, testData, 10, new Random(1));
 			
 			
 			
 		} catch (Exception e) {
 			System.err.print("Could not run evaluator from weka.");
+			System.exit(1);
 		}
 		
 		return Predictor.eval.toSummaryString("\nResults\n======\n", true);
 		
+	}
+	
+	
+	double predictClassForInstance(int index) {
+		double pred = 0.0;
+		
+		try {
+
+			Instance currInst = testData.instance(index); 
+				
+			pred = Predictor.eval.evaluateModelOnce(Predictor.classifier, currInst);
+			
+		} catch (Exception e) {
+			System.err.print("Could not evaluate instance.\nExiting program.");
+			System.exit(1);
+		}
+		
+		return pred;
 	}
 	
 	double[] getFDistribution() {
