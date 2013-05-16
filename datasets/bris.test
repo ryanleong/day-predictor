@@ -1,3 +1,29 @@
+@relation WeatherTest
+
+@attribute city {Melbourne, Sydney, Brisbane}
+@attribute year real
+@attribute month real
+@attribute date real
+@attribute rainfall numeric
+@attribute minTemp numeric
+@attribute maxTemp numeric
+@attribute avgTemp numeric
+@attribute maxWindSpeed numeric
+@attribute minSkyCeiling numeric
+@attribute maxSkyCeiling numeric
+@attribute avgSkyCeiling numeric
+@attribute minVisibility numeric
+@attribute maxVisibility numeric
+@attribute avgVisibility numeric
+@attribute minDewPoint numeric
+@attribute maxDewPoint numeric
+@attribute avgDewPoint numeric
+@attribute minBarometricPressure numeric
+@attribute maxBarometricPressure numeric
+@attribute avgBarometricPressure numeric
+@attribute day {Mon, Tue, Wed, Thu, Fri, Sat, Sun}
+
+@data
 Brisbane,1945,02,05,0.0,19.1,28.5,23.7,6.7,900.0,22000.0,13208.3,9600.0,160000.0,141200.0,15.7,18.0,16.8,1013.5,1016.6,1015.0,?
 Brisbane,1945,07,16,0.0,12.4,19.1,14.1,11.3,900.0,22000.0,9662.5,160000.0,160000.0,160000.0,5.2,11.3,7.9,1006.8,1014.2,1009.2,?
 Brisbane,1945,08,20,0.0,14.1,23.0,17.6,4.1,1050.0,22000.0,5416.7,3200.0,160000.0,134533.3,11.3,14.6,13.5,1015.6,1022.0,1018.1,?

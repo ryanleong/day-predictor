@@ -2,17 +2,25 @@ package core;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.core.FastVector;
 import weka.core.Instances;
 
 public class Predictor {
 
 	// Flag to predict for data with missing "day" value
 	// I.E. test data set
-	private static boolean predictionsForTest = false;
+	private static boolean predictionsForTest = true;
+	
+	// Flag to enable use of comparison between different classifiers 
+	static boolean multipleClassifierComparision = true;
+	
+	// Location of training and test data
+	private static String trainingInput = "datasets/bris.train";
+	private static String testInput = "datasets/bris.test";
 
 	// Classifier
-	static Classifier classifier = null;
+	static Classifier naiveBayesClassifier = null;
+	static Classifier decisionTreeClassifier = null;
+	static Classifier supportVectorMachineClassifier = null;
 
 	// Classifier Type
 	static classifierType cType = classifierType.NAIVEBAYES;
@@ -23,12 +31,9 @@ public class Predictor {
 	// Evaluator
 	static Evaluation eval = null;
 
-	// Location of training and test data
-	private static String trainingInput = "melb.train";
-	private static String testInput = "melb.test";
-
+	// Enum of classifier type
 	public static enum classifierType {
-		NAIVEBAYES, DECISION_TREE
+		NAIVEBAYES, DECISION_TREE, SUPPORT_VECTOR_MACHINE
 	}
 
 	public static void main(String[] args) {
@@ -49,16 +54,14 @@ public class Predictor {
 	private static void doEvaluation() {
 		Evaluator evaluator = new Evaluator();
 		
-		// TODO put attributes from training data into test instance
-		
 		if (predictionsForTest) {
-			evaluator.doPredictionForTest(testInput);
+			evaluator.createTestInstances(testInput);
+			evaluator.generatePredictions();
+			evaluator.writePredictionsToFile(testInput + ".output");
 		}
 		else {
-			//evaluator.wekaRead(testInput);
 			
-			System.out.println("\n============================");
-			System.out.println(evaluator.getEvaluation());
+			System.out.println(evaluator.evaluateTrainingData(false));
 
 			// Confusion matrix
 			double[][] x = eval.confusionMatrix();

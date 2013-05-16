@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
+import core.Predictor.classifierType;
+
 import weka.classifiers.Evaluation;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -17,6 +19,9 @@ import weka.core.Instances;
 public class Evaluator {
 
 	Instances testData = null;
+	double[] naiveBayesPredictions;
+	double[] decisionTreePredictions;
+	double[] supportVectorMachinePredictions;
 
 	// Constructor
 	Evaluator() {
@@ -30,32 +35,236 @@ public class Evaluator {
 			System.exit(1);
 		}
 	}
-
-	void wekaRead(String testSource) {
+	
+	void createTestInstances(String testSource) {
+		System.out.print("Reading in test data... ");
+		
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(
-					testSource));
+			
+			// read from test data source
+			BufferedReader reader = new BufferedReader(new FileReader(testSource));
 			testData = new Instances(reader);
 
 			if (testData.classIndex() == -1)
 				testData.setClassIndex(testData.numAttributes() - 1);
 
+			
 		} catch (Exception e) {
 			System.err.print("Unable to build instances from training input.\nExiting Program.");
 			System.exit(1);
 		}
-
+		
+		System.out.println("Done!");
 	}
 	
-	// Evaluate entire data set
-	String getEvaluation() {
+	void generatePredictions() {
+		try {
+			// Get NaiveBayes predictions
+			naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
+			
+			// Get Decision Tree predictions
+			decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
+			
+			// Get Support Vector Machine predictions
+			supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
+			
+//			// Get predictions
+//			if (Predictor.cType == classifierType.DECISION_TREE) {
+//				// Get Decision Tree predictions
+//				decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
+//			}
+//			else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
+//				// Get Support Vector Machine predictions
+//				supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
+//			}
+//			else {
+//				// Get NaiveBayes predictions
+//				naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
+//			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	void writePredictionsToFile(String outputLocation) {
+
+		System.out.print("Writing predictions to file... ");
+		
+		BufferedWriter bw = null;
+		FileWriter fw = null;
+		
+		try {
+			
+			File file = new File(outputLocation);
+ 
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+ 
+			fw = new FileWriter(file.getAbsoluteFile());
+			bw = new BufferedWriter(fw);
+			
+			
+			// write to file
+			for (int i = 0; i < testData.numInstances(); i++) {
+				String outputString = "";
+				
+				for (int j = 0; j < testData.instance(i).numAttributes(); j++) {
+					
+					if (testData.instance(i).attribute(j).name().equals("year") ||
+							testData.instance(i).attribute(j).name().equals("month") ||
+							testData.instance(i).attribute(j).name().equals("date")) {
+						
+						// set year, month and date
+						outputString = outputString + (int)testData.instance(i).value(j) + ",";
+					}
+					else if (j == 0) {
+						// set city
+						outputString = outputString + testData.instance(i).stringValue(j) + ",";
+					}
+					else if (j == (testData.instance(i).numAttributes() - 1)) {
+						// set prediction
+						outputString = outputString + choosePredictions(i) + "\n";
+					}
+					else {
+						//set everything else
+						if (testData.instance(i).isMissing(j)) {
+							outputString = outputString + "?,";
+						}
+						else {
+							outputString = outputString + testData.instance(i).value(j) + ",";
+						}
+						
+					}
+				}
+				
+				bw.write(outputString);
+			}
+			
+			
+			bw.close();
+ 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fw != null)
+					fw.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}	
+		}
+		
+		System.out.print("Done!\n");
+	}
+	
+	String dayNoToString(int dayNo) {
+		String day = "";
+		
+		switch (dayNo) {
+		case 0:
+			day = "Mon";
+			break;
+		case 1:
+			day = "Tue";
+			break;
+		case 2:
+			day = "Wed";
+			break;
+		case 3:
+			day = "Thu";
+			break;
+		case 4:
+			day = "Fri";
+			break;
+		case 5:
+			day = "Sat";
+			break;
+		case 6:
+			day = "Sun";
+			break;
+		default:
+			break;
+		}
+		
+		return day;
+	}
+	
+	private String choosePredictions(int index) {
+		//return dayNoToString((int) prediction);
+		
+		if (Predictor.multipleClassifierComparision) {
+			int[] predictions = new int[3];
+			
+			predictions[0] = (int) naiveBayesPredictions[index];
+			predictions[1] = (int) decisionTreePredictions[index];
+			predictions[2] = (int) supportVectorMachinePredictions[index];
+			
+			if (predictions[0] == predictions[1]) {
+				return dayNoToString(predictions[0]);
+			}
+			else if (predictions[0] == predictions[2]) {
+				return dayNoToString(predictions[2]);
+			}
+			else if (predictions[1] == predictions[2]) {
+				return dayNoToString(predictions[1]);
+			}
+			else {
+				return dayNoToString(predictions[0 + (int)(Math.random() * ((2 - 0) + 1))]);
+			}
+		}
+		else {
+			if (Predictor.cType == classifierType.DECISION_TREE) {
+				return dayNoToString((int) decisionTreePredictions[index]);
+			}
+			else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
+				return dayNoToString((int) supportVectorMachinePredictions[index]);
+			}
+			else {
+				return dayNoToString((int) naiveBayesPredictions[index]);
+			}
+		}
+	}
+	
+	
+	// Evaluate entire training dataset against itself
+	String evaluateTrainingData(boolean evaluateTestData) {
 
 		try {
-			// Compare with test data
-			// Predictor.eval.evaluateModel(Predictor.classifier, testData);
+			
+//			double[] predictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, Predictor.trainingData);
+//			
+//			System.out.println(predictions.length);
+//			
+//			System.exit(0);
 
-			Predictor.eval.crossValidateModel(Predictor.classifier, Predictor.trainingData, 10, new Random(1));
+			if (evaluateTestData) {
+				if (Predictor.cType == classifierType.DECISION_TREE) {
+					Predictor.eval.crossValidateModel(Predictor.decisionTreeClassifier, testData, 10, new Random(1));
+				}
+				else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
+					Predictor.eval.crossValidateModel(Predictor.supportVectorMachineClassifier, testData, 10, new Random(1));
+				}
+				else {
+					// Default is NaiveBayes
+					Predictor.eval.crossValidateModel(Predictor.naiveBayesClassifier, testData, 10, new Random(1));
+				}
+			}
+			else {
+				if (Predictor.cType == classifierType.DECISION_TREE) {
+					Predictor.eval.crossValidateModel(Predictor.decisionTreeClassifier, Predictor.trainingData, 10, new Random(1));
+				}
+				else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
+					Predictor.eval.crossValidateModel(Predictor.supportVectorMachineClassifier, Predictor.trainingData, 10, new Random(1));
+				}
+				else {
+					// Default is NaiveBayes
+					Predictor.eval.crossValidateModel(Predictor.naiveBayesClassifier, Predictor.trainingData, 10, new Random(1));
+				}
+			}
 
+			
 		} catch (Exception e) {
 			System.err.print("Could not run evaluator from weka.");
 			System.exit(1);
@@ -65,171 +274,5 @@ public class Evaluator {
 
 	}
 
-	// Read in and do test data
-	void doPredictionForTest(String testDataInput) {
-		// Index of instance
-		int indexOfInstance = 0;
 		
-		// Buffer to read from file
-		BufferedReader br = null;
-		
-		// Buffer to write to file
-		BufferedWriter bw = null;
-		
-		// Get an instance from the training data
-		Instance tempTrainingInstance = Predictor.trainingData.instance(0);
-
-		// New attributes object to be put into test data
-		FastVector testAttributes = new FastVector(
-				Predictor.trainingData.numAttributes());
-
-		// Place attributes from training instance to Attribute objects
-		for (int i = 0; i < Predictor.trainingData.numAttributes(); i++) {
-			testAttributes.addElement(tempTrainingInstance.attribute(i));
-		}
-		
-		
-		// Create an empty training set
-		testData = new Instances("Weather Test", testAttributes, 10);
-
-		// Set class index
-		if (testData.classIndex() == -1)
-			testData.setClassIndex(testData.numAttributes() - 1);
-
-
-		try {
-
-			String currentLine;
-
-			br = new BufferedReader(new FileReader(testDataInput));
-
-			// Location of file to write to
-			File file = new File(testDataInput + ".output");
-			
-			// if file doesnt exists, then create it
-			if (!file.exists()) {
-				file.createNewFile();
-			}
- 
-			// File writer
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			bw = new BufferedWriter(fw);
-			
-			
-			
-			while ((currentLine = br.readLine()) != null) {
-				// Split String into array
-				String[] testInstanceData = currentLine.split(",");
-				
-				// Create the instance
-				Instance dataInstance = new Instance(Predictor.trainingData.numAttributes());
-
-				// place data in instance
-				for (int i = 0; i < testInstanceData.length; i++) {
-					
-					if(tempTrainingInstance.attribute(i).isNominal()) {
-						if (testInstanceData[i].equals("?")) {
-							dataInstance.setValue((Attribute)testAttributes.elementAt(i), Instance.missingValue());
-						}
-						else {
-							dataInstance.setValue((Attribute)testAttributes.elementAt(i), testInstanceData[i]);
-						}
-						 
-					}
-					else if (tempTrainingInstance.attribute(i).isNumeric()) {
-						
-						// check if missing value
-						if (testInstanceData[i].equals("?")) {
-							dataInstance.setValue((Attribute)testAttributes.elementAt(i), Instance.missingValue());
-						}
-						else {
-							dataInstance.setValue((Attribute)testAttributes.elementAt(i), Double.parseDouble(testInstanceData[i]));
-						}
-					}
-					
-				}
-				
-				// add the instance
-				testData.add(dataInstance);
-				
-				//System.out.println(testData.instance(0).toString());
-				
-				// Make prediction
-				String day = predictClassForInstance(indexOfInstance);
-			
-				// Combine instance data parts into string
-				String out = "";
-
-				for (int i = 0; i < testInstanceData.length - 1; i++) {
-					out = out + testInstanceData[i] + ",";
-				}
-				
-				out = out + day +"\n";
-				
-				// Write to file
-				bw.write(out);
-				
-				// Increament index
-				indexOfInstance++;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-				if(bw != null)
-					bw.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-			
-			
-		}
-
-	}
-	
-	String predictClassForInstance(int indexOfInstance) {
-		String day = "";
-
-		try {
-			
-			int dayNo = (int) Predictor.eval.evaluateModelOnce(Predictor.classifier, testData.instance(indexOfInstance));
-			
-			switch (dayNo) {
-			case 0:
-				day = "Mon";
-				break;
-			case 1:
-				day = "Tue";
-				break;
-			case 2:
-				day = "Wed";
-				break;
-			case 3:
-				day = "Thu";
-				break;
-			case 4:
-				day = "Fri";
-				break;
-			case 5:
-				day = "Sat";
-				break;
-			case 6:
-				day = "Sun";
-				break;
-			default:
-				break;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.print("Could not evaluate instance.\nExiting program.");
-			System.exit(1);
-		}
-
-		return day;
-	}
-	
 }
