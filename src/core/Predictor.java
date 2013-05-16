@@ -1,9 +1,5 @@
 package core;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.core.FastVector;
@@ -13,7 +9,7 @@ public class Predictor {
 
 	// Flag to predict for data with missing "day" value
 	// I.E. test data set
-	private boolean predictionsForTest = true;
+	private static boolean predictionsForTest = true;
 
 	// Training data
 	static Instances trainingData;
@@ -58,76 +54,32 @@ public class Predictor {
 		Evaluator evaluator = new Evaluator();
 		
 		// TODO put attributes from training data into test instance
-//		evaluator.doPredictionForTest(testInput);
-//		
-//		System.exit(0);
 		
-		
-		
-		//System.out.println(currInst.attribute(3).name());
-		
-		///////////////////////////////////////////////
-		// Through weka read
-		
-
-		evaluator.wekaRead(testInput);
-		
-
-		System.out.println("\n============================");
-		System.out.println(evaluator.getEvaluation());
-
-		// Confusion matrix
-		double[][] x = eval.confusionMatrix();
-		System.out.println("Mon\tTue\tWed\tThu\tFri\tSat\tSun");
-
-		for (int i = 0; i < x.length; i++) {
-
-			for (int j = 0; j < x[i].length; j++) {
-				System.out.print(x[i][j] + "\t");
-			}
-
-			System.out.println();
+		if (predictionsForTest) {
+			evaluator.doPredictionForTest(testInput);
 		}
-
-	}
-
-	private static void toFile() {
-
-		BufferedReader br = null;
-		 
-		try {
- 
-			String currentLine;
-			boolean startReading = false;
+		else {
+			evaluator.wekaRead(testInput);
 			
-			br = new BufferedReader(new FileReader(testInput));
- 
-			while ((currentLine = br.readLine()) != null) {
-				
-				if (!startReading) {
-					if (currentLine.equals("@data")) {
-						startReading = true;
-					}
-					
-					String[] lineParts = currentLine.split(",");
-					lineParts[lineParts.length - 1] = "";
-					
+
+			System.out.println("\n============================");
+			System.out.println(evaluator.getEvaluation());
+
+			// Confusion matrix
+			double[][] x = eval.confusionMatrix();
+			System.out.println("Mon\tTue\tWed\tThu\tFri\tSat\tSun");
+
+			for (int i = 0; i < x.length; i++) {
+
+				for (int j = 0; j < x[i].length; j++) {
+					System.out.print(x[i][j] + "\t");
 				}
-				
-				
-			}
- 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
+
+				System.out.println();
 			}
 		}
- 
+		
 
 	}
-
+	
 }

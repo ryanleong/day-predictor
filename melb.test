@@ -1,15 +1,3 @@
-@relation weather
-
-@attribute city {Melbourne, Perth, Sydney}
-@attribute year real
-@attribute month real
-@attribute date real
-@attribute rainfall numeric
-@attribute maxTemp numeric
-@attribute minTemp numeric
-@attribute day {Mon, Tue, Wed, Thu, Fri, Sat, Sun}
-
-@data
 Melbourne,1855,01,29,?,?,?,?
 Melbourne,1855,02,26,?,?,?,?
 Melbourne,1855,04,30,5.3,?,?,?

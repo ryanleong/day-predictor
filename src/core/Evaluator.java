@@ -23,8 +23,9 @@ public class Evaluator {
 	Evaluator() {
 
 		try {
-			// Run evaluator
+			// create evaluator
 			Predictor.eval = new Evaluation(Predictor.trainingData);
+			
 		} catch (Exception e) {
 			System.out.println("Unable to create evaluator.");
 			System.exit(1);
@@ -41,13 +42,31 @@ public class Evaluator {
 				testData.setClassIndex(testData.numAttributes() - 1);
 
 		} catch (Exception e) {
-			// TODO: handle exception
 			System.err.print("Unable to build instances from training input.\nExiting Program.");
 			System.exit(1);
 		}
 
 	}
+	
+	// Evaluate entire data set
+	String getEvaluation() {
 
+		try {
+			// Compare with test data
+			// Predictor.eval.evaluateModel(Predictor.classifier, testData);
+
+			Predictor.eval.crossValidateModel(Predictor.classifier, Predictor.trainingData, 10, new Random(1));
+
+		} catch (Exception e) {
+			System.err.print("Could not run evaluator from weka.");
+			System.exit(1);
+		}
+
+		return Predictor.eval.toSummaryString("\nResults\n=========\n", true);
+
+	}
+
+	// Read in and do test data
 	void doPredictionForTest(String testDataInput) {
 		// Index of instance
 		int indexOfInstance = 0;
@@ -131,7 +150,6 @@ public class Evaluator {
 					
 				}
 				
-				
 				// add the instance
 				testData.add(dataInstance);
 				
@@ -180,8 +198,6 @@ public class Evaluator {
 			
 			int dayNo = (int) Predictor.eval.evaluateModelOnce(Predictor.classifier, testData.instance(indexOfInstance));
 			
-			System.out.print(dayNo + ", ");
-			
 			switch (dayNo) {
 			case 0:
 				day = "Mon";
@@ -217,23 +233,4 @@ public class Evaluator {
 		return day;
 	}
 	
-	// Evaluate entire data set
-	String getEvaluation() {
-
-		try {
-			// Compare with test data
-			// Predictor.eval.evaluateModel(Predictor.classifier, testData);
-
-			Predictor.eval.crossValidateModel(Predictor.classifier, testData,
-					10, new Random(1));
-
-		} catch (Exception e) {
-			System.err.print("Could not run evaluator from weka.");
-			System.exit(1);
-		}
-
-		return Predictor.eval.toSummaryString("\nResults\n=========\n", true);
-
-	}
-
 }
