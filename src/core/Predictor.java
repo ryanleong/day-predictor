@@ -9,13 +9,7 @@ public class Predictor {
 
 	// Flag to predict for data with missing "day" value
 	// I.E. test data set
-	private static boolean predictionsForTest = true;
-
-	// Training data
-	static Instances trainingData;
-
-	// Attributes
-	static FastVector attributes = null;
+	private static boolean predictionsForTest = false;
 
 	// Classifier
 	static Classifier classifier = null;
@@ -23,6 +17,9 @@ public class Predictor {
 	// Classifier Type
 	static classifierType cType = classifierType.NAIVEBAYES;
 
+	// Training data
+	static Instances trainingData;
+	
 	// Evaluator
 	static Evaluation eval = null;
 
@@ -41,7 +38,6 @@ public class Predictor {
 
 		doEvaluation();
 
-		// Output to file
 	}
 
 	private static void doClassification() {
@@ -59,9 +55,8 @@ public class Predictor {
 			evaluator.doPredictionForTest(testInput);
 		}
 		else {
-			evaluator.wekaRead(testInput);
+			//evaluator.wekaRead(testInput);
 			
-
 			System.out.println("\n============================");
 			System.out.println(evaluator.getEvaluation());
 

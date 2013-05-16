@@ -1,6 +1,6 @@
 @relation weather
 
-@attribute city {Melbourne, Perth, Sydney}
+@attribute city {Melbourne, Sydney, Brisbane}
 @attribute year real
 @attribute month real
 @attribute date real

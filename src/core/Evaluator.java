@@ -16,7 +16,6 @@ import weka.core.Instances;
 
 public class Evaluator {
 
-	private Instance test = new Instance(8);
 	Instances testData = null;
 
 	// Constructor
