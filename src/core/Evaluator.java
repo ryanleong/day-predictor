@@ -11,6 +11,7 @@ import java.util.Random;
 import core.Predictor.classifierType;
 
 import weka.classifiers.Evaluation;
+import weka.classifiers.meta.Bagging;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -34,53 +35,42 @@ public class Evaluator {
 			System.out.println("Unable to create evaluator.");
 			System.exit(1);
 		}
-	}
-	
-	void createTestInstances(String testSource) {
-		System.out.print("Reading in test data... ");
 		
-		try {
-			
-			// read from test data source
-			BufferedReader reader = new BufferedReader(new FileReader(testSource));
-			testData = new Instances(reader);
-
-			if (testData.classIndex() == -1)
-				testData.setClassIndex(testData.numAttributes() - 1);
-
-			
-		} catch (Exception e) {
-			System.err.print("Unable to build instances from training input.\nExiting Program.");
-			System.exit(1);
-		}
-		
-		System.out.println("Done!");
 	}
 	
 	void generatePredictions() {
 		try {
-			// Get NaiveBayes predictions
-			naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
 			
-			// Get Decision Tree predictions
-			decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
+			if (Predictor.multipleClassifierComparision) {
+				// Get NaiveBayes predictions
+				naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
+				
+				// Get Decision Tree predictions
+				decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
+				
+				// Get Support Vector Machine predictions
+				supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
+			}
 			
-			// Get Support Vector Machine predictions
-			supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
+			else {
+				// Get predictions
+				if (Predictor.cType == classifierType.DECISION_TREE) {
+					// Get Decision Tree predictions
+					decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
+				}
+				else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
+					// Get Support Vector Machine predictions
+					supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
+				}
+				else {
+					// Get NaiveBayes predictions
+					naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
+				}
+			}
 			
-//			// Get predictions
-//			if (Predictor.cType == classifierType.DECISION_TREE) {
-//				// Get Decision Tree predictions
-//				decisionTreePredictions = Predictor.eval.evaluateModel(Predictor.decisionTreeClassifier, testData);
-//			}
-//			else if (Predictor.cType == classifierType.SUPPORT_VECTOR_MACHINE) {
-//				// Get Support Vector Machine predictions
-//				supportVectorMachinePredictions = Predictor.eval.evaluateModel(Predictor.supportVectorMachineClassifier, testData);
-//			}
-//			else {
-//				// Get NaiveBayes predictions
-//				naiveBayesPredictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, testData);
-//			}
+
+			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -112,9 +102,9 @@ public class Evaluator {
 				
 				for (int j = 0; j < testData.instance(i).numAttributes(); j++) {
 					
-					if (testData.instance(i).attribute(j).name().equals("year") ||
-							testData.instance(i).attribute(j).name().equals("month") ||
-							testData.instance(i).attribute(j).name().equals("date")) {
+					if (testData.instance(i).attribute(j).name().equals("F1") ||
+							testData.instance(i).attribute(j).name().equals("F2") ||
+							testData.instance(i).attribute(j).name().equals("F3")) {
 						
 						// set year, month and date
 						outputString = outputString + (int)testData.instance(i).value(j) + ",";
@@ -133,7 +123,14 @@ public class Evaluator {
 							outputString = outputString + "?,";
 						}
 						else {
-							outputString = outputString + testData.instance(i).value(j) + ",";
+							
+							if (testData.instance(i).attribute(j).isNominal()){
+								outputString = outputString + testData.instance(i).stringValue(j) + ",";
+							}
+							else {
+								outputString = outputString + testData.instance(i).value(j) + ",";
+							}
+							
 						}
 						
 					}
@@ -192,8 +189,8 @@ public class Evaluator {
 	}
 	
 	private String choosePredictions(int index) {
-		//return dayNoToString((int) prediction);
 		
+		// Use the majority of the three
 		if (Predictor.multipleClassifierComparision) {
 			int[] predictions = new int[3];
 			
@@ -232,12 +229,6 @@ public class Evaluator {
 	String evaluateTrainingData(boolean evaluateTestData) {
 
 		try {
-			
-//			double[] predictions = Predictor.eval.evaluateModel(Predictor.naiveBayesClassifier, Predictor.trainingData);
-//			
-//			System.out.println(predictions.length);
-//			
-//			System.exit(0);
 
 			if (evaluateTestData) {
 				if (Predictor.cType == classifierType.DECISION_TREE) {
