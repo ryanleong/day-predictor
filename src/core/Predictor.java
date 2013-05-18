@@ -3,7 +3,7 @@ package core;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-import dataClassifiers.AggregateClassifier;
+import dataClassifiers.StackingClassifier;
 import dataClassifiers.BaggingClassifier;
 import dataClassifiers.DecisionTreeClassifier;
 import dataClassifiers.NaiveBayesClassifier;
@@ -14,10 +14,10 @@ public class Predictor {
 
 	// Flag to predict for data with missing "day" value
 	// I.E. test data set
-	private static boolean predictionsForTest = true;
+	private static boolean evaluateAgainstSelf = false;
 
 	// Classifier Type
-	public static classifierType cType = classifierType.NAIVEBAYES;
+	public static classifierType cType = classifierType.DECISION_TREE;
 
 	// Location of training and test data
 	private static String trainingInput = "datasets/melb.train.arff";
@@ -31,16 +31,17 @@ public class Predictor {
 
 	// Enum of classifier type
 	public static enum classifierType {
-		NAIVEBAYES, DECISION_TREE, SUPPORT_VECTOR_MACHINE, VOTE, BAGGING
+		NAIVEBAYES, DECISION_TREE, STACKING, BAGGING
 	}
 
 	public static void main(String[] args) {
 
-		// printClassifierType();
-
 		// Build data sets
 		buildTrainingDataSet();
 		buildTestDataSet();
+		
+		// Build evaluator
+		Evaluator eval = new Evaluator(trainingData);
 
 		// Use specified classifier
 		if (cType == classifierType.NAIVEBAYES) {
@@ -48,21 +49,32 @@ public class Predictor {
 			System.out.println("Classifier used: NaiveBayes Classifer");
 
 			NaiveBayesClassifier nb = new NaiveBayesClassifier(trainingData);
-			// System.out.println(nb.getClassifier().toString());
 			
-			Evaluator eval = new Evaluator(trainingData);
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(nb.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(nb.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".NaiveBayesOutput", testData);
+			}
 			
-			eval.doEvaluation(nb.getClassifier(), testData);
-			//System.out.println(testData.numInstances() + "\t" + eval.getPredictions(nb.getClassifier(), testData).length);
-			
-			eval.writePredictionsToFile(testInput + ".out", trainingData);
-			
+			System.out.println(eval.getEvaluationStats());
 			
 		} else if (cType == classifierType.DECISION_TREE) {
+			
 			System.out.println("Classifier used: Decision Trees");
 
 			DecisionTreeClassifier dt = new DecisionTreeClassifier(trainingData);
-			// System.out.println(dt.getClassifier().toString());
+
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(dt.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(dt.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".DecisionTreeOutput", testData);
+			}
+			
+			System.out.println(eval.getEvaluationStats());
 			
 			
 			
@@ -71,31 +83,35 @@ public class Predictor {
 					.println("Classifier used: Bagging (Used with Decision Trees)");
 
 			BaggingClassifier bag = new BaggingClassifier(trainingData);
-			//System.out.println(bag.getClassifier().toString());
+
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(bag.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(bag.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".BaggingOutPut", testData);
+			}
+			
+			System.out.println(eval.getEvaluationStats());
 		
 			
-			
 		} else {
-			System.out
-					.println("Classifier used: An aggregate of NaiveBayes and Decision Trees\n"
-							+ "");
+			System.out.println("Classifier used: An aggregate of NaiveBayes and Decision Trees\n");
 
 			classifierType[] cl = {classifierType.NAIVEBAYES, classifierType.DECISION_TREE};
 			
-			AggregateClassifier ac = new AggregateClassifier(trainingData, cl);
+			StackingClassifier stack = new StackingClassifier(trainingData, cl);
+			
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(stack.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(stack.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".StackingOutPut", testData);
+			}
+			
+			System.out.println(eval.getEvaluationStats());
 		}
-
-		System.exit(0);
-		// ////////////////////////////////
-
-		// Create classifier
-		// Classifiers trainingClassifier = new Classifiers();
-		//
-		// System.out.println(trainingData.toSummaryString() + "\n");
-		//
-		// System.out.println(testData.toSummaryString() + "\n");
-		//
-		// runEvaluation();
 
 	}
 
@@ -154,43 +170,4 @@ public class Predictor {
 		System.out.println("Done!\n");
 	}
 
-	private static void runEvaluation() {
-
-		if (predictionsForTest) {
-
-		} else {
-
-			// System.out.println(evaluator.evaluateTrainingData(false));
-
-			// Confusion matrix
-			// double[][] x = eval.confusionMatrix();
-			// System.out.println("Mon\tTue\tWed\tThu\tFri\tSat\tSun");
-			//
-			// for (int i = 0; i < x.length; i++) {
-			//
-			// for (int j = 0; j < x[i].length; j++) {
-			// System.out.print(x[i][j] + "\t");
-			// }
-			//
-			// System.out.println();
-			// }
-		}
-
-	}
-
-	private static void printClassifierType() {
-
-		if (cType == classifierType.NAIVEBAYES) {
-			System.out.println("Classifier used: NaiveBayes Classifer");
-		} else if (cType == classifierType.DECISION_TREE) {
-			System.out.println("Classifier used: Decision Trees");
-		} else if (cType == classifierType.BAGGING) {
-			System.out
-					.println("Classifier used: Bagging (Used with Decision Trees)");
-		} else {
-			System.out
-					.println("Classifier used: An aggregate of NaiveBayes and Decision Trees\n"
-							+ "");
-		}
-	}
 }

@@ -27,18 +27,19 @@ public class Evaluator {
 		}	
 	}
 	
-	public Evaluation getEvaluation() {
+	public Evaluation getEvaluator() {
 		return evaluator;
 	}
 	
+	public String getEvaluationStats() {
+		return evaluator.toSummaryString();
+	}
+	
 	public double[] getPredictions(Classifier classifier, Instances data) {
-		
-		//doEvaluation(classifier, data);
 		return predictions;
 	}
 	
 	public void printPredictions() {
-		// TODO 
 		int count = 0;
 		
 		for (int i = 0; i < predictions.length; i++) {
@@ -136,7 +137,6 @@ public class Evaluator {
 	public void doEvaluation(Classifier classifier, Instances data) {
 		try {
 			predictions = evaluator.evaluateModel(classifier, data);
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
