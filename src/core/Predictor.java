@@ -12,29 +12,34 @@ import weka.core.Instances;
 
 public class Predictor {
 
+	// Enum of classifier type
+	public static enum classifierType {
+		NAIVEBAYES, DECISION_TREE, BAGGING, STACKING
+	}
+
 	// Flag to predict for data with missing "day" value
 	// I.E. test data set
 	private static boolean evaluateAgainstSelf = false;
 
 	// Classifier Type
-	public static classifierType cType = classifierType.DECISION_TREE;
+	public static classifierType cType = classifierType.STACKING;
+
+	/////////////////////////////////////////////////
 
 	// Location of training and test data
-	private static String trainingInput = "datasets/melb.train.arff";
-	private static String testInput = "datasets/melb.dev.arff";
-
-	// ///////////////////////////////////////////////
-
+	private static String trainingInput = "datasets/bris.train.arff";
+	private static String testInput = "datasets/bris.dev.arff";
+	
 	// Training data
 	private static Instances trainingData;
 	private static Instances testData;
 
-	// Enum of classifier type
-	public static enum classifierType {
-		NAIVEBAYES, DECISION_TREE, STACKING, BAGGING
-	}
-
-	public static void main(String[] args) {
+	
+public static void main(String[] args) {
+		
+		if (args.length != 0) {
+			handleArguments(args);
+		}
 
 		// Build data sets
 		buildTrainingDataSet();
@@ -58,8 +63,6 @@ public class Predictor {
 				eval.writePredictionsToFile(testInput + ".NaiveBayesOutput", testData);
 			}
 			
-			System.out.println(eval.getEvaluationStats());
-			
 		} else if (cType == classifierType.DECISION_TREE) {
 			
 			System.out.println("Classifier used: Decision Trees");
@@ -73,8 +76,6 @@ public class Predictor {
 				eval.doEvaluation(dt.getClassifier(), testData);
 				eval.writePredictionsToFile(testInput + ".DecisionTreeOutput", testData);
 			}
-			
-			System.out.println(eval.getEvaluationStats());
 			
 			
 			
@@ -92,8 +93,6 @@ public class Predictor {
 				eval.writePredictionsToFile(testInput + ".BaggingOutPut", testData);
 			}
 			
-			System.out.println(eval.getEvaluationStats());
-		
 			
 		} else {
 			System.out.println("Classifier used: An aggregate of NaiveBayes and Decision Trees\n");
@@ -110,9 +109,31 @@ public class Predictor {
 				eval.writePredictionsToFile(testInput + ".StackingOutPut", testData);
 			}
 			
-			System.out.println(eval.getEvaluationStats());
 		}
 
+		System.out.println(eval.getEvaluationStats());
+		System.out.println(eval.confusionMatrixToString());
+	}
+	
+	private static void buildTestDataSet() {
+		System.out.print("Reading in test data... ");
+
+		try {
+
+			// read from test data source
+			BufferedReader reader = new BufferedReader(new FileReader(testInput));
+			testData = new Instances(reader);
+
+			if (testData.classIndex() == -1)
+				testData.setClassIndex(testData.numAttributes() - 1);
+
+		} catch (Exception e) {
+			System.err.print("Unable to build instances from training input.\n" +
+					"Exiting Program.");
+			System.exit(1);
+		}
+
+		System.out.println("Done!\n");
 	}
 
 	private static void buildTrainingDataSet() {
@@ -121,9 +142,8 @@ public class Predictor {
 		try {
 
 			// Build training data set
-			BufferedReader reader = new BufferedReader(new FileReader(
-					trainingInput));
-			Predictor.trainingData = new Instances(reader);
+			BufferedReader reader = new BufferedReader(new FileReader(trainingInput));
+			trainingData = new Instances(reader);
 
 			// // combine dev and training instances
 			// reader = new BufferedReader(new FileReader("melb.dev"));
@@ -134,40 +154,99 @@ public class Predictor {
 			// }
 			//
 			// temp = null;
+			
+			
+			// Delete instances with missing data
+			for (int i = 1; i < trainingData.numAttributes(); i++) {
+				trainingData.deleteWithMissing(i);
+			}
+			
 
 			if (Predictor.trainingData.classIndex() == -1)
 				Predictor.trainingData.setClassIndex(Predictor.trainingData
 						.numAttributes() - 1);
 
 		} catch (Exception e) {
-			System.err
-					.print("Unable to build instances from training input.\nExiting Program.");
+			System.err.print("Unable to build instances from training input.\n" +
+							"Exiting Program.");
 			System.exit(1);
 		}
 
 		System.out.println("Done!\n");
 	}
 
-	private static void buildTestDataSet() {
-		System.out.print("Reading in test data... ");
+	private static void handleArguments(String[] args) {
+		if (args.length != 0) {
+			try {
+				
+				// if -h flag is used
+				if (args[0].equals("-h")) {
+					
+					System.out.println("usage: \n/usr/java1.6/bin/java -Xmx128m -cp bin:. " + 
+							"core.Predictor [-t] [-e] [-c classifier]\n" +
+							"-e\t\t: Path of test data to be evaluated\n" +
+							"-t\t\t: Path of training data\n" +
+							"-c classifier\t: An integer that represents the use of 1 of the 4 classifiers\n" +
+							"\t\t\t1 - NaiveBayes\n" +
+							"\t\t\t2 - Decision Trees\n" +
+							"\t\t\t3 - Bagging\n" +
+							"\t\t\t4 - Stacking");
 
-		try {
+					System.exit(0);
+				}
 
-			// read from test data source
-			BufferedReader reader = new BufferedReader(
-					new FileReader(testInput));
-			testData = new Instances(reader);
+				for (int i = 0; i < args.length; i++) {
+					
+//					// if -t flag is used
+//					if (args[i].equals("-t")) {
+//						technique = Integer.parseInt(args[i + 1]);
+//
+//						if (technique < 1 || technique > 4) {
+//							System.out
+//									.println("Choose between algorithms 1, 2, 3 or 4.");
+//							System.exit(0);
+//						}
+//					} 
+//					// if -d flag is used
+//					else if (args[i].equals("-d")) {
+//						dictFileName = args[i + 1];
+//
+//						File f = new File(dictFileName);
+//
+//						if (!f.exists()) {
+//							System.out.println("Dictionary not found.");
+//							System.exit(0);
+//						}
+//					} 
+//					// if -m flag is used
+//					else if (args[i].equals("-m")) {
+//						
+//						evaluationOutput = false;
+//					} 
+//					// if -a flag is used
+//					else if (args[i].equals("-a")) {
+//						
+//						useAbbreviationDictionary = true;
+//					}
+//					// if -f flag is used
+//					else if (args[i].equals("-f")) {
+//						
+//						inputFile = args[i + 1];
+//						
+//						File f = new File(inputFile);
+//
+//						if (!f.exists()) {
+//							System.out.println("Input file not found.");
+//							System.exit(0);
+//						}
+//					}
+				}
 
-			if (testData.classIndex() == -1)
-				testData.setClassIndex(testData.numAttributes() - 1);
-
-		} catch (Exception e) {
-			System.err
-					.print("Unable to build instances from training input.\nExiting Program.");
-			System.exit(1);
+			} catch (Exception e) {
+				System.out.println("Invalid arguments\nRunning with default settings");
+			}
 		}
-
-		System.out.println("Done!\n");
 	}
 
+	
 }

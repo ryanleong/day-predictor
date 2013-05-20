@@ -27,12 +27,70 @@ public class Evaluator {
 		}	
 	}
 	
-	public Evaluation getEvaluator() {
-		return evaluator;
+	public void doEvaluation(Classifier classifier, Instances data) {
+		try {
+			predictions = evaluator.evaluateModel(classifier, data);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+	
+	public String confusionMatrixToString() {
+		double[][] matrix = evaluator.confusionMatrix();
+		int day = 0;
+		String confusionMatrix = "Confusion Matrix\n======================\n" +
+				"Mon\tTue\tWed\tThu\tFri\tSat\tSun\n";
+		
+		for (int i = 0; i < matrix.length; i++) {
+			for (int j = 0; j < matrix[i].length; j++) {
+				confusionMatrix = confusionMatrix + (int) matrix[i][j] + "\t";
+			}
+			confusionMatrix = confusionMatrix + getDayString(day) + "\n";
+			day++;
+		}
+		
+		return confusionMatrix;
+	}
+	
+	private String getDayString(int value) {
+		String day = "";
+		
+		switch (value) {
+		case 0:
+			day = "Mon";
+			break;
+		case 1:
+			day = "Tue";
+			break;
+		case 2:
+			day = "Wed";
+			break;
+		case 3:
+			day = "Thu";
+			break;
+		case 4:
+			day = "Fri";
+			break;
+		case 5:
+			day = "Sat";
+			break;
+		case 6:
+			day = "Sun";
+			break;
+		default:
+			break;
+		}
+		
+		return day;
 	}
 	
 	public String getEvaluationStats() {
 		return evaluator.toSummaryString();
+	}
+	
+	public Evaluation getEvaluator() {
+		return evaluator;
 	}
 	
 	public double[] getPredictions(Classifier classifier, Instances data) {
@@ -73,6 +131,8 @@ public class Evaluator {
 			fw = new FileWriter(file.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
 			
+			fw.write(confusionMatrixToString());
+			fw.write(getEvaluationStats() + "\n");
 			
 			// write to file
 			for (int i = 0; i < data.numInstances(); i++) {
@@ -132,46 +192,5 @@ public class Evaluator {
 		}
 		
 		System.out.print("Done!\n");
-	}
-	
-	public void doEvaluation(Classifier classifier, Instances data) {
-		try {
-			predictions = evaluator.evaluateModel(classifier, data);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-	
-	private String getDayString(int value) {
-		String day = "";
-		
-		switch (value) {
-		case 0:
-			day = "Mon";
-			break;
-		case 1:
-			day = "Tue";
-			break;
-		case 2:
-			day = "Wed";
-			break;
-		case 3:
-			day = "Thu";
-			break;
-		case 4:
-			day = "Fri";
-			break;
-		case 5:
-			day = "Sat";
-			break;
-		case 6:
-			day = "Sun";
-			break;
-		default:
-			break;
-		}
-		
-		return day;
 	}
 }

@@ -13,6 +13,11 @@ public class DecisionTreeClassifier {
 		try {
 			// Build NaiveBayes Classifier
 			decisionTreeClassifier = new J48();
+			
+			// Use binary splits for nominal attributes.
+			String[] options = weka.core.Utils.splitOptions("-M 6");
+			decisionTreeClassifier.setOptions(options);
+			
 			decisionTreeClassifier.buildClassifier(trainingData);
 			
 		} catch (Exception e) {
