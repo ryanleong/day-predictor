@@ -3,18 +3,20 @@ package core;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import dataClassifiers.RandomForestClassifier;
 import dataClassifiers.StackingClassifier;
 import dataClassifiers.BaggingClassifier;
 import dataClassifiers.DecisionTreeClassifier;
 import dataClassifiers.NaiveBayesClassifier;
 
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public class Predictor {
 
 	// Enum of classifier type
 	public static enum classifierType {
-		NAIVEBAYES, DECISION_TREE, BAGGING, STACKING
+		NAIVEBAYES, DECISION_TREE, BAGGING, STACKING, RANDOM_FOREST
 	}
 
 	// Flag to predict for data with missing "day" value
@@ -22,7 +24,7 @@ public class Predictor {
 	private static boolean evaluateAgainstSelf = false;
 
 	// Classifier Type
-	public static classifierType cType = classifierType.STACKING;
+	public static classifierType cType = classifierType.RANDOM_FOREST;
 
 	/////////////////////////////////////////////////
 
@@ -80,8 +82,7 @@ public static void main(String[] args) {
 			
 			
 		} else if (cType == classifierType.BAGGING) {
-			System.out
-					.println("Classifier used: Bagging (Used with Decision Trees)");
+			System.out.println("Classifier used: Bagging (Used with Decision Trees)");
 
 			BaggingClassifier bag = new BaggingClassifier(trainingData);
 
@@ -94,7 +95,7 @@ public static void main(String[] args) {
 			}
 			
 			
-		} else {
+		} else if(cType == classifierType.STACKING) {
 			System.out.println("Classifier used: An aggregate of NaiveBayes and Decision Trees\n");
 
 			classifierType[] cl = {classifierType.NAIVEBAYES, classifierType.DECISION_TREE};
@@ -109,6 +110,21 @@ public static void main(String[] args) {
 				eval.writePredictionsToFile(testInput + ".StackingOutPut", testData);
 			}
 			
+		} else {
+			
+			System.out.println("Classifier used: Random Forest\n");
+			
+			RandomForestClassifier rf = new RandomForestClassifier(trainingData);
+			
+			System.out.println(rf.getClassifier().toString());
+			
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(rf.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(rf.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".RandomForestOutPut", testData);
+			}
 		}
 
 		System.out.println(eval.getEvaluationStats());

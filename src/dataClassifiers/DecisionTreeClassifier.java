@@ -14,7 +14,7 @@ public class DecisionTreeClassifier {
 			// Build NaiveBayes Classifier
 			decisionTreeClassifier = new J48();
 			
-			// Use binary splits for nominal attributes.
+			// Set minimum number of instances per leaf to 6
 			String[] options = weka.core.Utils.splitOptions("-M 6");
 			decisionTreeClassifier.setOptions(options);
 			
