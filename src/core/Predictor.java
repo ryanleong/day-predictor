@@ -3,20 +3,20 @@ package core;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import dataClassifiers.OneRClassifier;
 import dataClassifiers.RandomForestClassifier;
 import dataClassifiers.StackingClassifier;
 import dataClassifiers.BaggingClassifier;
 import dataClassifiers.DecisionTreeClassifier;
 import dataClassifiers.NaiveBayesClassifier;
 
-import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 
 public class Predictor {
 
 	// Enum of classifier type
 	public static enum classifierType {
-		NAIVEBAYES, DECISION_TREE, BAGGING, STACKING, RANDOM_FOREST
+		NAIVEBAYES, DECISION_TREE, RANDOM_FOREST, BAGGING, STACKING, ONE_R
 	}
 
 	// Flag to predict for data with missing "day" value
@@ -24,13 +24,13 @@ public class Predictor {
 	private static boolean evaluateAgainstSelf = false;
 
 	// Classifier Type
-	public static classifierType cType = classifierType.RANDOM_FOREST;
+	public static classifierType cType = classifierType.ONE_R;
 
 	/////////////////////////////////////////////////
 
 	// Location of training and test data
-	private static String trainingInput = "datasets/bris.train.arff";
-	private static String testInput = "datasets/bris.dev.arff";
+	private static String trainingInput = "datasets/melb.train.arff";
+	private static String testInput = "datasets/melb.dev.arff";
 	
 	// Training data
 	private static Instances trainingData;
@@ -110,7 +110,22 @@ public static void main(String[] args) {
 				eval.writePredictionsToFile(testInput + ".StackingOutPut", testData);
 			}
 			
-		} else {
+		} else if(cType == classifierType.ONE_R) {
+			System.out.println("Classifier used: OneR\n");
+
+			//classifierType[] cl = {classifierType.NAIVEBAYES, classifierType.DECISION_TREE};
+			
+			OneRClassifier oneRClassifier = new OneRClassifier(trainingData);
+			
+			if (evaluateAgainstSelf) {
+				eval.doEvaluation(oneRClassifier.getClassifier(), trainingData);
+			}
+			else {
+				eval.doEvaluation(oneRClassifier.getClassifier(), testData);
+				eval.writePredictionsToFile(testInput + ".StackingOutPut", testData);
+			}
+			
+		}else {
 			
 			System.out.println("Classifier used: Random Forest\n");
 			
