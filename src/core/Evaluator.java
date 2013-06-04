@@ -112,7 +112,7 @@ public class Evaluator {
 		}
 	}
 	
-	public void writePredictionsToFile(String outputLocation, Instances data) {
+	public void writePredictionsToFile(String outputLocation, Instances data, String additionalText) {
 
 		System.out.print("Writing predictions to file... ");
 		
@@ -131,8 +131,17 @@ public class Evaluator {
 			fw = new FileWriter(file.getAbsoluteFile());
 			bw = new BufferedWriter(fw);
 			
-			fw.write(confusionMatrixToString());
-			fw.write(getEvaluationStats() + "\n");
+			if (Predictor.VERBOSE) {
+				// Save evaluation stats
+				fw.write(getEvaluationStats() + "\n");
+				
+				// Save confusion matrix
+				fw.write(confusionMatrixToString() + "\n");
+				
+				// Save any additional data
+				fw.write(additionalText + "\n\n");
+			}
+			
 			
 			// write to file
 			for (int i = 0; i < data.numInstances(); i++) {

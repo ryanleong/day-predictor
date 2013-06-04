@@ -1,4 +1,4 @@
-package dataClassifiers;
+package dataclassifiers;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.J48;

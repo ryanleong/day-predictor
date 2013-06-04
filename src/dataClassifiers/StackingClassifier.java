@@ -1,4 +1,4 @@
-package dataClassifiers;
+package dataclassifiers;
 
 import core.Predictor;
 import core.Predictor.classifierType;

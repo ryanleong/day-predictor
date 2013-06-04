@@ -1,4 +1,4 @@
-package dataClassifiers;
+package dataclassifiers;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
@@ -9,7 +9,6 @@ public class RandomForestClassifier {
 	Classifier rfClassifier = null;
 	
 	public RandomForestClassifier(Instances trainingData) {
-		// TODO Auto-generated constructor stub
 		try {
 			rfClassifier = new RandomForest();
 			
